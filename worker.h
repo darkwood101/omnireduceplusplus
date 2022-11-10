@@ -6,6 +6,7 @@
 #include <vector>
 #include <random>
 
+#include "types.h"
 #include "event.h"
 #include "block.h"
 
@@ -13,12 +14,12 @@ class Aggregator;
 
 class Worker {
 public:
-    Worker(uint32_t id);
+    Worker(workernum_t id);
     void generate_data(size_t size, float sparsity);
     void recv_block(const Block& block);
-    TimeDelta process_response();
-    TimeDelta prepare_to_send();
-    TimeDelta send(Aggregator& agg);
+    timedelta_t process_response();
+    timedelta_t prepare_to_send();
+    timedelta_t send(Aggregator& agg);
 
 private:
     std::random_device rd_;
@@ -26,10 +27,10 @@ private:
 
     std::vector<float> gradients_;
     uint32_t block_size_;
-    uint32_t id_;
+    workernum_t id_;
 
-    size_t next_nonzero_;
-    size_t next_agg_;
+    blocknum_t next_nonzero_;
+    blocknum_t next_agg_;
 
     Block recv_block_;
     Block send_block_;

@@ -5,7 +5,7 @@
 #include "worker.h"
 #include "aggregator.h"
 
-Worker::Worker(uint32_t id) :
+Worker::Worker(workernum_t id) :
     id_(id),
     generator_(rd_()) {
 }
@@ -52,9 +52,9 @@ TimeDelta Worker::prepare_to_send() {
     send_block_.block_id_ = next_agg_;
 
     // Find the next non-zero block
-    size_t old_nonzero = next_nonzero_;
-    next_nonzero_ = Block::infinity;
-    for (size_t i = next_agg_ + 1; i * block_size_ < gradients_.size(); ++i) {
+    blocknum_t old_nonzero = next_nonzero_;
+    next_nonzero_ = BLOCK_INF;
+    for (blocknum_t i = next_agg_ + 1; i * block_size_ < gradients_.size(); ++i) {
         bool zero_block = true;
         for (size_t j = 0; j != block_size_; ++j) {
             if (gradients_[i * block_size_ + j] != 0) {
