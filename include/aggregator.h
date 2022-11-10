@@ -9,12 +9,15 @@
 #include "event.h"
 #include "block.h"
 
+class Worker;
+
 class Aggregator {
 public:
     Aggregator(workernum_t num_workers);
     void recv_block(const Block& block);
     timedelta_t process_response(workernum_t worker);
     timedelta_t prepare_to_send();
+    timedelta_t send(Worker& worker);
     bool round_done() const;
     bool all_done() const;
 

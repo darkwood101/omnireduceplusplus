@@ -14,6 +14,8 @@ class Aggregator;
 
 class Worker {
 public:
+    const workernum_t id_;
+
     Worker(workernum_t id);
     void generate_data(size_t size, float sparsity);
     void recv_block(const Block& block);
@@ -26,8 +28,7 @@ private:
     std::mt19937 generator_;
 
     std::vector<float> gradients_;
-    uint32_t block_size_;
-    workernum_t id_;
+    uint32_t block_size_ = 256;
 
     blocknum_t next_nonzero_;
     blocknum_t next_agg_;

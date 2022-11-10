@@ -3,7 +3,12 @@
 #include <queue>
 #include <iostream>
 
-Event::Event(Timestamp start_timestamp, Timestamp end_timestamp) :
+Event::Event(EventType type,
+             workernum_t worker_id,
+             timestamp_t start_timestamp,
+             timestamp_t end_timestamp) :
+    type_(type),
+    worker_id_(worker_id),
     start_timestamp_(start_timestamp),
     end_timestamp_(end_timestamp) {
 }

@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "aggregator.h"
+#include "worker.h"
 
 Aggregator::Aggregator(workernum_t num_workers) :
     num_workers_(num_workers) {
@@ -34,7 +35,7 @@ timedelta_t Aggregator::process_response(workernum_t worker) {
 
 timedelta_t Aggregator::prepare_to_send() {
     if (num_received_ != num_to_receive_) {
-        throw std::logic_error("Can't send before receiving all worker packets");
+        throw std::logic_error("Can't prepare to send before receiving all worker packets");
     }
 
     // Prepare for responses
@@ -58,6 +59,15 @@ timedelta_t Aggregator::prepare_to_send() {
     num_received_ = 0;
 
     return static_cast<timedelta_t>(num_workers_);
+}
+
+timedelta_t Aggregator::send(Worker& worker) {
+    if (num_received_ != num_to_receive_) {
+        throw std::logic_error("Can't send before receiving all worker packets");
+    }
+
+    worker.recv_block(send_block_);
+    return send_block_.data_.size();
 }
 
 bool Aggregator::round_done() const {

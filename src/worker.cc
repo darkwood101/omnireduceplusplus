@@ -31,7 +31,7 @@ void Worker::recv_block(const Block& block) {
     recv_block_ = block;
 }
 
-TimeDelta Worker::process_response() {
+timedelta_t Worker::process_response() {
     for (size_t i = 0; i != recv_block_.data_.size(); ++i) {
         gradients_[recv_block_.block_id_ * block_size_ + i] = recv_block_.data_[i];
     }
@@ -40,7 +40,7 @@ TimeDelta Worker::process_response() {
     return recv_block_.data_.size();
 }
 
-TimeDelta Worker::prepare_to_send() {
+timedelta_t Worker::prepare_to_send() {
     if (next_agg_ != next_nonzero_) {
         return 0;
     }
@@ -72,7 +72,7 @@ TimeDelta Worker::prepare_to_send() {
     return block_size_ + (next_nonzero_ - old_nonzero) * block_size_;
 }
 
-TimeDelta Worker::send(Aggregator& agg) {
+timedelta_t Worker::send(Aggregator& agg) {
     if (next_agg_ != next_nonzero_) {
         return 0;
     }
