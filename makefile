@@ -28,6 +28,11 @@ ifeq ($(filter 1, $(ASAN)), 1)
 CXXFLAGS += -g -fsanitize=address
 endif
 
+# UBSAN=1 -- enable undefined behavior sanitizer
+ifeq ($(filter 1, $(UBSAN)), 1)
+CXXFLAGS += -g -fsanitize=undefined
+endif
+
 # D=1 -- enable debugging mode: log outputs, assertions, etc
 ifeq ($(filter 1, $(D)), 1)
 CXXFLAGS += -g -ggdb3 -DDEBUGGING
