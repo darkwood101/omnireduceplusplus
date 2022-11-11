@@ -45,7 +45,7 @@ private:
     uint32_t num_to_receive_;
 
     // TODO Block size, statically fixed for now
-    uint32_t block_size_ = 256;
+    uint32_t block_size_ = 64;
 
     // Minimum next nonzero block
     // (i.e. the block to ask for in the next round)

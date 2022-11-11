@@ -27,7 +27,7 @@ private:
     std::mt19937 generator_;
 
     std::vector<float> gradients_;
-    uint32_t block_size_ = 256;
+    uint32_t block_size_ = 64;
 
     blocknum_t next_nonzero_;
     blocknum_t next_agg_;
