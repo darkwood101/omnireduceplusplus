@@ -11,7 +11,8 @@ enum EventType {
     WORKER_SEND,
     AGGREGATOR_PROCESS,
     AGGREGATOR_PREPARE,
-    AGGREGATOR_SEND
+    AGGREGATOR_SEND,
+    INIT_EVENT
 };
 
 struct Event {

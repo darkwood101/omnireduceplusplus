@@ -25,6 +25,7 @@ private:
     const workernum_t num_workers_;
     uint32_t num_received_;
     uint32_t num_to_receive_;
+    uint32_t block_size_ = 256;
     blocknum_t min_next_;
     std::vector<Block> recv_blocks_;
     Block send_block_;

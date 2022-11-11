@@ -24,7 +24,6 @@ public:
     timedelta_t send(Aggregator& agg);
 
 private:
-    std::random_device rd_;
     std::mt19937 generator_;
 
     std::vector<float> gradients_;

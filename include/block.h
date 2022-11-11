@@ -8,6 +8,7 @@
 #include "types.h"
 
 struct Block {
+    Block(uint32_t block_size);
     std::vector<float> data_;
     blocknum_t next_;
     blocknum_t block_id_;
