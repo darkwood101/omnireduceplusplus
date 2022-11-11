@@ -6,7 +6,7 @@
 #include "event.h"
 #include "aggregator.h"
 #include "worker.h"
-//d
+
 class Simulator {
     using EventQueue = std::priority_queue<Event, std::vector<Event>, std::greater<Event>>;
 
@@ -20,7 +20,7 @@ private:
     std::vector<Worker> workers_;
 
     uint32_t block_size_;
-    uint64_t time_;
+    uint64_t time_;         // global time
     EventQueue events_;
 };
 

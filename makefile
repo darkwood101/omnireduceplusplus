@@ -28,6 +28,11 @@ ifeq ($(filter 1, $(ASAN)), 1)
 CXXFLAGS += -g -fsanitize=address
 endif
 
+# D=1 -- enable debugging mode: log outputs, assertions, etc
+ifeq ($(filter 1, $(D)), 1)
+CXXFLAGS += -g -ggdb3 -DDEBUGGING
+endif
+
 # Create directories if they don't exist
 $(OBJFILES): | $(OBJDIR) $(DEPSDIR)
 

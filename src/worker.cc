@@ -5,6 +5,7 @@
 #include "event.h"
 #include "worker.h"
 #include "aggregator.h"
+#include "utils.h"
 
 Worker::Worker(workernum_t id) :
     id_(id),
@@ -13,7 +14,6 @@ Worker::Worker(workernum_t id) :
     next_agg_(0),
     recv_block_(block_size_),
     send_block_(block_size_) {
-    std::cout << "Created worker " << id << std::endl;
 }
 
 void Worker::generate_data(size_t size, float sparsity) {
@@ -38,7 +38,11 @@ void Worker::recv_block(const Block& block) {
 }
 
 timedelta_t Worker::process_response() {
-    std::cout << "[W" << id_ << "] Processing block " << recv_block_.block_id_ << " from aggregator, next requested is " << recv_block_.next_ << std::endl;
+    DEBUG(std::cout
+          << "[W" << id_
+          << "] Processing block " << recv_block_.block_id_
+          << " from aggregator, next requested is " << recv_block_.next_
+          << std::endl;);
     for (size_t i = 0; i != recv_block_.data_.size(); ++i) {
         gradients_[recv_block_.block_id_ * block_size_ + i] = recv_block_.data_[i];
     }
@@ -48,7 +52,11 @@ timedelta_t Worker::process_response() {
 }
 
 timedelta_t Worker::prepare_to_send() {
-    std::cout << "[W" << id_ << "] Prepare to send, next requested block is " << next_agg_ << ", next available is " << next_nonzero_ << std::endl;
+    DEBUG(std::cout
+          << "[W" << id_
+          << "] Prepare to send, next requested block is " << next_agg_
+          << ", next available is " << next_nonzero_
+          << std::endl;);
     if (next_nonzero_ == BLOCK_INF || next_agg_ != next_nonzero_) {
         return 0;
     }
@@ -82,7 +90,11 @@ timedelta_t Worker::prepare_to_send() {
 }
 
 timedelta_t Worker::send(Aggregator& agg) {
-    std::cout << "[W" << id_ << "] Sending block " << send_block_.block_id_ << " to aggregator" << std::endl;
+    DEBUG(std::cout
+          << "[W" << id_
+          << "] Sending block " << send_block_.block_id_
+          << " to aggregator"
+          << std::endl;);
     agg.recv_block(send_block_);
     return 10;
 }
