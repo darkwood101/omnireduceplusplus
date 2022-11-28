@@ -5,11 +5,12 @@
 #include "worker.h"
 #include "utils.h"
 
-Simulator::Simulator(workernum_t num_workers) :
-    aggregator_(num_workers),
+Simulator::Simulator(workernum_t num_workers, uint32_t block_size) :
+    aggregator_(num_workers, block_size),
+    block_size_(block_size),
     time_(0) {
     for (workernum_t worker_id = 0; worker_id != num_workers; ++worker_id) {
-        Worker w = {worker_id};
+        Worker w = {worker_id, block_size};
         workers_.push_back(w);
     }
     // Fake event to kickstart the simulator
@@ -87,5 +88,4 @@ void Simulator::run() {
         events_.pop();
     }
     assert(aggregator_.all_done());
-    std::cout << "Done in " << time_ << std::endl;
 }

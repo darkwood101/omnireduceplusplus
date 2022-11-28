@@ -13,7 +13,7 @@ class Worker;
 
 class Aggregator {
 public:
-    Aggregator(workernum_t num_workers);
+    Aggregator(workernum_t num_workers, uint32_t block_size);
 
     // Copy the block from a worker to the aggregator
     void recv_block(const Block& block);
@@ -45,7 +45,7 @@ private:
     uint32_t num_to_receive_;
 
     // TODO Block size, statically fixed for now
-    uint32_t block_size_ = 64;
+    uint32_t block_size_;
 
     // Minimum next nonzero block
     // (i.e. the block to ask for in the next round)

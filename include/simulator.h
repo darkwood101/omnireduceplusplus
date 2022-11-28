@@ -11,7 +11,7 @@ class Simulator {
     using EventQueue = std::priority_queue<Event, std::vector<Event>, std::greater<Event>>;
 
 public:
-    Simulator(workernum_t num_workers);
+    Simulator(workernum_t num_workers, uint32_t block_size);
     void generate_data(size_t size, float sparsity);
     void run();
 

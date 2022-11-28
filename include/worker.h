@@ -16,7 +16,7 @@ class Worker {
 public:
     const workernum_t id_;
 
-    Worker(workernum_t id);
+    Worker(workernum_t id, uint32_t block_size);
     void generate_data(size_t size, float sparsity);
     void recv_block(const Block& block);
     timedelta_t process_response();
@@ -27,7 +27,7 @@ private:
     std::mt19937 generator_;
 
     std::vector<float> gradients_;
-    uint32_t block_size_ = 64;
+    uint32_t block_size_;
 
     blocknum_t next_nonzero_;
     blocknum_t next_agg_;

@@ -7,9 +7,10 @@
 #include "aggregator.h"
 #include "utils.h"
 
-Worker::Worker(workernum_t id) :
+Worker::Worker(workernum_t id, uint32_t block_size) :
     id_(id),
     generator_(std::random_device{}()),
+    block_size_(block_size),
     next_nonzero_(0),
     next_agg_(0),
     recv_block_(block_size_),

@@ -6,10 +6,11 @@
 #include "worker.h"
 #include "utils.h"
 
-Aggregator::Aggregator(workernum_t num_workers) :
+Aggregator::Aggregator(workernum_t num_workers, uint32_t block_size) :
     num_workers_(num_workers),
     num_received_(0),
     num_to_receive_(num_workers_),
+    block_size_(block_size),
     send_block_(block_size_) {
     for (size_t i = 0; i != num_workers_; ++i) {
         recv_blocks_.push_back(Block(block_size_));
