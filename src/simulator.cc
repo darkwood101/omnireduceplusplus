@@ -89,3 +89,7 @@ void Simulator::run() {
     }
     assert(aggregator_.all_done());
 }
+
+uint64_t Simulator::get_time() {
+    return time_;
+}

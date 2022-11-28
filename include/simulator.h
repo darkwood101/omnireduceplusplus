@@ -14,6 +14,7 @@ public:
     Simulator(workernum_t num_workers, uint32_t block_size);
     void generate_data(size_t size, float sparsity);
     void run();
+    uint64_t get_time();
 
 private:
     Aggregator aggregator_;
