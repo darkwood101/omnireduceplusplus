@@ -34,6 +34,8 @@ private:
 
     Block recv_block_;
     Block send_block_;
+
+    blocknum_t find_nonzero() const;
 };
 
 #endif

@@ -36,6 +36,7 @@ void Simulator::run() {
         // Advance time
         time_ = e.end_timestamp_;
         timedelta_t delta;
+        DEBUG(std::cout << "[" << time_ << "]";);
         switch (e.type_) {
             case INIT_EVENT:
                 // Workers will first prepare to send
@@ -86,4 +87,5 @@ void Simulator::run() {
         events_.pop();
     }
     assert(aggregator_.all_done());
+    std::cout << "Done in " << time_ << std::endl;
 }

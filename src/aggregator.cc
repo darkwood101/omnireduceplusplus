@@ -45,7 +45,7 @@ timedelta_t Aggregator::process_response(workernum_t worker) {
     // Update the next block to be expected
     min_next_ = std::min(min_next_, recv_block.next_);
 
-    return recv_blocks_[worker].data_.size();
+    return ceil(0.00064971 * recv_blocks_.size());
 }
 
 timedelta_t Aggregator::prepare_to_send() {
@@ -81,12 +81,16 @@ timedelta_t Aggregator::prepare_to_send() {
           << " to all workers, requesting block " << send_block_.next_
           << std::endl;);
 
-    return static_cast<timedelta_t>(num_workers_);
+    return ceil(90 + 0.8 * block_size_ * num_workers_);
 }
 
 timedelta_t Aggregator::send(Worker& worker) {
+    DEBUG(std::cout
+          << "[A]  Sending block " << send_block_.block_id_
+          << " to workers"
+          << std::endl;);
     worker.recv_block(send_block_);
-    return send_block_.data_.size();
+    return ceil(0.00064971 * block_size_);
 }
 
 bool Aggregator::round_done() const {

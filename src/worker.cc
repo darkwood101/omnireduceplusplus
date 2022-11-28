@@ -48,7 +48,19 @@ timedelta_t Worker::process_response() {
     }
     next_agg_ = recv_block_.next_;
 
-    return 10;
+    // How much time will it take to prepare for sending
+    if (next_nonzero_ == BLOCK_INF || next_agg_ != next_nonzero_) {
+        return 0;
+    }
+    timedelta_t copy_gradients = ceil(0.00064971 * block_size_);
+    blocknum_t next_nonzero = find_nonzero();
+    timedelta_t lookahead;
+    if (next_nonzero == BLOCK_INF) {
+        lookahead = ceil(0.00064871 * block_size_ * (gradients_.size() / block_size_ - next_agg_));
+    } else {
+        lookahead = ceil(0.00064871 * block_size_ * (next_nonzero - next_agg_));
+    }
+    return copy_gradients + lookahead;
 }
 
 timedelta_t Worker::prepare_to_send() {
@@ -68,25 +80,11 @@ timedelta_t Worker::prepare_to_send() {
     send_block_.block_id_ = next_agg_;
 
     // Find the next non-zero block
-    blocknum_t old_nonzero = next_nonzero_;
-    (void) old_nonzero;
-    next_nonzero_ = BLOCK_INF;
-    for (blocknum_t i = next_agg_ + 1; i * block_size_ < gradients_.size(); ++i) {
-        bool zero_block = true;
-        for (size_t j = 0; j != block_size_; ++j) {
-            if (gradients_[i * block_size_ + j] != 0) {
-                zero_block = false;
-                break;
-            }
-        }
-        if (!zero_block) {
-            next_nonzero_ = i;
-            break;
-        }
-    }
+    next_nonzero_ = find_nonzero();
     send_block_.next_ = next_nonzero_;
 
-    return 10;
+    // Time taken to send over the network
+    return ceil(90 + 0.8 * block_size_);
 }
 
 timedelta_t Worker::send(Aggregator& agg) {
@@ -96,5 +94,23 @@ timedelta_t Worker::send(Aggregator& agg) {
           << " to aggregator"
           << std::endl;);
     agg.recv_block(send_block_);
-    return 10;
+    return ceil(0.00064971 * block_size_);
+}
+
+blocknum_t Worker::find_nonzero() const {
+    blocknum_t next_nonzero = BLOCK_INF;
+    for (blocknum_t i = next_agg_ + 1; i * block_size_ < gradients_.size(); ++i) {
+        bool zero_block = true;
+        for (size_t j = 0; j != block_size_; ++j) {
+            if (gradients_[i * block_size_ + j] != 0) {
+                zero_block = false;
+                break;
+            }
+        }
+        if (!zero_block) {
+            next_nonzero = i;
+            break;
+        }
+    }
+    return next_nonzero;
 }
