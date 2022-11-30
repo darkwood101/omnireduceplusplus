@@ -8,10 +8,14 @@ static float sparsities[] = {0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.9
 static constexpr size_t data_size = 134217728;
 
 int main() {
+#if defined(DEBUGGING) || defined(VERBOSE)
+    std::cerr << "Warning: it is recommended to run this experiment "
+                 "without D=1 and without V=1" << std::endl;
+#endif
     std::cout << "blocksize,sparsity,time" << std::endl;
     for (uint32_t i = 0; i != sizeof(block_sizes) / sizeof(uint32_t); ++i) {
         for (uint32_t j = 0; j != sizeof(sparsities) / sizeof(float); ++j) {
-            Simulator s(4, block_sizes[i]);
+            Simulator s(4, block_sizes[i], 4);
             s.generate_data(data_size, sparsities[j]);
             s.run();
             std::cout << block_sizes[i] << "," << sparsities[j] << "," << s.get_time() << std::endl;

@@ -4,5 +4,7 @@
 # Object files
 *.o
 
-# Executables
-main
+# Executables (but allow source and header files)
+exp-*
+!exp-*.cc
+!exp-*.h

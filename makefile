@@ -1,6 +1,6 @@
 # Compiler flags
 CXX := g++
-CXXFLAGS := -W -Wall -Wextra -Werror -O2 -std=c++17
+CXXFLAGS := -W -Wall -Wextra -Werror -Wshadow -std=c++17
 
 # Build target
 all: $(TARGET)
@@ -44,9 +44,16 @@ ifeq ($(filter 1, $(UBSAN)), 1)
 CXXFLAGS += -g -fsanitize=undefined
 endif
 
-# D=1 -- enable debugging mode: log outputs, assertions, etc
+# D=1 -- enable debugging mode: debugging simbols, assertions, etc
 ifeq ($(filter 1, $(D)), 1)
-CXXFLAGS += -g -ggdb3 -DDEBUGGING
+CXXFLAGS += -g -ggdb3 -DDEBUGGING -O0
+else
+CXXFLAGS += -O2
+endif
+
+# V=1 -- enable verbose mode
+ifeq ($(filter 1, $(V)), 1)
+CXXFLAGS += -DVERBOSE
 endif
 
 # Create directories if they don't exist

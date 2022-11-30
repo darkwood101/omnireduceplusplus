@@ -8,6 +8,11 @@
 #endif
 
 #define debug_assert(x) DEBUG(assert(x);)
-#define debug_print
+
+#ifdef VERBOSE
+    #define verbose_print(x) do { std::cout << x; } while (false)
+#else
+    #define verbose_print(x) do {  } while (false)
+#endif
 
 #endif

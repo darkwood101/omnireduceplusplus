@@ -5,12 +5,14 @@
 #include "worker.h"
 #include "utils.h"
 
-Simulator::Simulator(workernum_t num_workers, uint32_t block_size) :
-    aggregator_(num_workers, block_size),
+Simulator::Simulator(workernum_t num_workers, uint32_t block_size, uint32_t bf_width) :
+    aggregator_(num_workers, block_size, bf_width),
     block_size_(block_size),
+    bf_width_(bf_width),
     time_(0) {
+    // Initialize all workers
     for (workernum_t worker_id = 0; worker_id != num_workers; ++worker_id) {
-        Worker w = {worker_id, block_size};
+        Worker w = {worker_id, block_size, bf_width};
         workers_.push_back(w);
     }
     // Fake event to kickstart the simulator
@@ -18,6 +20,11 @@ Simulator::Simulator(workernum_t num_workers, uint32_t block_size) :
 }
 
 void Simulator::generate_data(size_t size, float sparsity) {
+    // For now, to keep things a bit simpler, we require that data size
+    // be a multiple of block size
+    if (size % block_size_ != 0) {
+        throw std::invalid_argument("Data size must be multiple of block size");
+    }
     for (Worker& w : workers_) {
         w.generate_data(size, sparsity);
     }
@@ -37,7 +44,7 @@ void Simulator::run() {
         // Advance time
         time_ = e.end_timestamp_;
         timedelta_t delta;
-        DEBUG(std::cout << "[" << time_ << "]";);
+        verbose_print("[TIMESTAMP: " << time_ << "]" << std::endl);
         switch (e.type_) {
             case INIT_EVENT:
                 // Workers will first prepare to send
@@ -46,34 +53,33 @@ void Simulator::run() {
                 }
                 break;
             case WORKER_PROCESS:
-                // Once the worker processed the block, prepare for sending
+                // Once the worker processed the packet, prepare for sending
                 delta = worker.process_response();
                 events_.push(Event(WORKER_PREPARE, worker.id_, time_, time_ + delta));
                 break;
             case WORKER_PREPARE:
                 delta = worker.prepare_to_send();
-                // If preparation is immediate, requested block is of lower number than the
-                // worker's next nonzero block, so don't send anything.
-                // Otherwise, send.
+                // If preparation is immediate, requested packet is of lower number than the
+                // worker's next nonzero block, so don't send anything
                 if (delta != TIME_NOW) {
                     events_.push(Event(WORKER_SEND, worker.id_, time_, time_ + delta));
                 }
                 break;
             case WORKER_SEND:
-                // Once the worker sends the block, aggregator should process it
+                // Once the worker sends the packet, aggregator should process it
                 delta = worker.send(aggregator_);
                 events_.push(Event(AGGREGATOR_PROCESS, worker.id_, time_, time_ + delta));
                 break;
             case AGGREGATOR_PROCESS:
                 delta = aggregator_.process_response(worker.id_);
-                // Once the aggregator processed the block, it should prepare to send,
-                // but only if all required workers sent their blocks
-                if (aggregator_.round_done()) {
+                // Once the aggregator processes the packet, it should prepare to send,
+                // but only if all required workers sent their packets
+                if (aggregator_.all_received()) {
                     events_.push(Event(AGGREGATOR_PREPARE, worker.id_, time_, time_ + delta));
                 }
                 break;
             case AGGREGATOR_PREPARE:
-                // Once the worker prepares to send, it multicasts the block to all workers
+                // Once the aggregator prepared to send, it multicasts the packet to all workers
                 delta = aggregator_.prepare_to_send();
                 for (Worker& w : workers_) {
                     events_.push(Event(AGGREGATOR_SEND, w.id_, time_, time_ + delta));
@@ -82,12 +88,15 @@ void Simulator::run() {
             case AGGREGATOR_SEND:
                 // Once a worker receives the block, it processes it
                 delta = aggregator_.send(worker);
+                // Reset per-round aggregator state if packets have been sent to all workers
+                if (aggregator_.all_sent()) {
+                    aggregator_.reset();
+                }
                 events_.push(Event(WORKER_PROCESS, worker.id_, time_, time_ + delta));
                 break;
         }
         events_.pop();
     }
-    assert(aggregator_.all_done());
 }
 
 uint64_t Simulator::get_time() {
