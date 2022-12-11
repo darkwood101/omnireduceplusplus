@@ -81,11 +81,11 @@ timedelta_t Worker::process_response() {
         next_agg_[i] = recv_block.next_;
     }
 
-    timedelta_t total_time = 0;
+    float total_time = 0;
     std::vector<blocknum_t> next_nonzero = find_nonzero();
     debug_assert(next_nonzero.size() == bf_width_);
 
-    total_time += ceil(0.00064971 * bf_width_);
+    total_time += 0.64971 * bf_width_;
     for (uint32_t i = 0; i != bf_width_; ++i) {
         // Skip if there is no next non-zero block or if the block requested by the
         // aggregator is different
@@ -93,15 +93,15 @@ timedelta_t Worker::process_response() {
             continue;
         }
         // Overhead of copying gradients
-        total_time += ceil(0.00064971 * block_size_);
+        total_time += 0.64971 * block_size_;
         // Lookahead overhead
         if (next_nonzero[i] == BLOCK_INF) {
-            total_time += ceil(0.00064971 * block_size_ * (gradients_.size() / block_size_ - next_agg_[i]));
+            total_time += 0.64971 * block_size_ * (gradients_.size() / block_size_ - next_agg_[i]);
         } else {
-            total_time += ceil(0.00064971 * block_size_ * (next_nonzero[i] - next_agg_[i]));
+            total_time += 0.64971 * block_size_ * (next_nonzero[i] - next_agg_[i]);
         }
     }
-    return total_time;
+    return static_cast<uint64_t>(ceil(total_time));
 }
 
 timedelta_t Worker::prepare_to_send() {
@@ -154,7 +154,7 @@ timedelta_t Worker::prepare_to_send() {
         return 0;
     }
     // Otherwise, the worker sends only the valid blocks
-    return ceil(1 + 0.00008 * block_size_ * valid_blocks);
+    return static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
 }
 
 timedelta_t Worker::send(Aggregator& agg) {
@@ -168,7 +168,7 @@ timedelta_t Worker::send(Aggregator& agg) {
     }
     // Processing the packet will take iterating over each fused block,
     // and then over data for valid blocks
-    return ceil(0.00064971 * bf_width_ + 0.00064971 * valid_blocks * block_size_);
+    return static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
 }
 
 std::vector<blocknum_t> Worker::find_nonzero() const {

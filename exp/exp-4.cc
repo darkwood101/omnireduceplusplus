@@ -4,7 +4,7 @@
 #include "simulator.h"
 #include "utils.h"
 
-static constexpr uint32_t block_size = 256;
+static constexpr uint32_t block_size = 64;
 static constexpr uint32_t bf_width = 16;
 static constexpr float sparsities[] = {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90,
                              0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99};
@@ -24,6 +24,6 @@ int main() {
         Simulator s(num_workers, block_size, bf_width);
         s.generate_data(data_size, sparsities[j]);
         s.run();
-        std::cout << sparsities[j] << "," << s.get_time() << std::endl;
+        std::cout << sparsities[j] << "," << float(s.get_time()) / 1e6 << std::endl;
     }
 }

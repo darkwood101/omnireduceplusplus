@@ -74,7 +74,7 @@ timedelta_t Aggregator::process_response(workernum_t worker) {
 
     // Preparing to send will require iterating over all blocks in all
     // packets that the workers send
-    return ceil(0.00064971 * bf_width_ * num_to_receive_);
+    return static_cast<uint64_t>(ceil(0.64971 * bf_width_ * num_to_receive_));
 }
 
 timedelta_t Aggregator::prepare_to_send() {
@@ -137,7 +137,7 @@ timedelta_t Aggregator::prepare_to_send() {
     // preparing to send.
     debug_assert(valid_blocks > 0);
     // The aggregator sends only the valid blocks
-    return ceil(1 + 0.00008 * block_size_ * valid_blocks);
+    return static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
 }
 
 timedelta_t Aggregator::send(Worker& worker) {
@@ -150,7 +150,7 @@ timedelta_t Aggregator::send(Worker& worker) {
     }
     // Processing the packet will take iterating over each fused block,
     // and then over data for valid blocks
-    return ceil(0.00064971 * bf_width_ + 0.00064971 * valid_blocks * block_size_);
+    return static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
 }
 
 bool Aggregator::all_received() const {
