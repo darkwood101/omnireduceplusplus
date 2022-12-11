@@ -7,6 +7,9 @@
 #include "aggregator.h"
 #include "utils.h"
 
+extern uint64_t computation_time;
+extern uint64_t network_time;
+
 Worker::Worker(workernum_t id, uint32_t block_size, uint32_t bf_width) :
     id_(id),
     generator_(std::random_device{}()),
@@ -22,13 +25,28 @@ Worker::Worker(workernum_t id, uint32_t block_size, uint32_t bf_width) :
     }
 }
 
-void Worker::generate_data(size_t size, float sparsity) {
+void Worker::generate_data(size_t size, uint32_t block_size, float sparsity) {
     if (sparsity < 0.0 || sparsity > 1.0) {
         throw std::invalid_argument("Sparsity must be between 0 and 1");
+    }
+    if (size % block_size != 0) {
+        throw std::invalid_argument("Data size must be a multiple of block size");
     }
 
     std::uniform_real_distribution<> distr(0.0, 1.0);
     gradients_.resize(size);
+    std::fill(gradients_.begin(), gradients_.end(), 0.0);
+
+    size_t num_blocks = size / block_size;
+    for (size_t i = 0; i != num_blocks; ++i) {
+        bool sparse_block = (distr(generator_) <= sparsity);
+        if (!sparse_block) {
+            for (uint32_t j = 0; j != block_size; ++j) {
+                gradients_[i * block_size + j] = distr(generator_);
+            }
+        }
+    }
+    /*
     for (size_t i = 0; i != size; ++i) {
         float num = distr(generator_);
         // With probability sparsity, the number will be 0,
@@ -39,6 +57,7 @@ void Worker::generate_data(size_t size, float sparsity) {
             gradients_[i] = distr(generator_);
         }
     }
+    */
 }
 
 void Worker::recv_packet(const Packet& packet) {
@@ -96,11 +115,12 @@ timedelta_t Worker::process_response() {
         total_time += 0.64971 * block_size_;
         // Lookahead overhead
         if (next_nonzero[i] == BLOCK_INF) {
-            total_time += 0.64971 * block_size_ * (gradients_.size() / block_size_ - next_agg_[i]);
+            total_time += 0.64971 * (gradients_.size() / block_size_ - next_agg_[i]);
         } else {
-            total_time += 0.64971 * block_size_ * (next_nonzero[i] - next_agg_[i]);
+            total_time += 0.64971 * (next_nonzero[i] - next_agg_[i]);
         }
     }
+    //computation_time += static_cast<uint64_t>(ceil(total_time));
     return static_cast<uint64_t>(ceil(total_time));
 }
 
@@ -154,7 +174,8 @@ timedelta_t Worker::prepare_to_send() {
         return 0;
     }
     // Otherwise, the worker sends only the valid blocks
-    return static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
+    //network_time += static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
+    return static_cast<uint64_t>(ceil(1000 + 0.8 * block_size_ * valid_blocks));
 }
 
 timedelta_t Worker::send(Aggregator& agg) {
@@ -168,6 +189,7 @@ timedelta_t Worker::send(Aggregator& agg) {
     }
     // Processing the packet will take iterating over each fused block,
     // and then over data for valid blocks
+    //computation_time += static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
     return static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
 }
 

@@ -12,7 +12,7 @@ class Simulator {
 
 public:
     Simulator(workernum_t num_workers, uint32_t block_size, uint32_t bf_width);
-    void generate_data(size_t size, float sparsity);
+    void generate_data(size_t size, uint32_t block_size, float sparsity);
     void run();
     uint64_t get_time();
 

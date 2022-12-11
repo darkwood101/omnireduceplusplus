@@ -19,7 +19,7 @@ public:
     Worker(workernum_t id, uint32_t block_size, uint32_t bf_width);
 
     // Generate gradients with a given number of elements and a given sparsity
-    void generate_data(size_t size, float sparsity);
+    void generate_data(size_t size, uint32_t block_size, float sparsity);
 
     // Copy the packet from the aggregator to the worker
     void recv_packet(const Packet& packet);

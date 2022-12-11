@@ -19,7 +19,7 @@ int main() {
         for (uint32_t j = 0; j != sizeof(sparsities) / sizeof(float); ++j) {
             for (uint32_t k = 0; k != sizeof(bf_widths) / sizeof(uint32_t); ++k) {
                 Simulator s(4, block_sizes[i], bf_widths[i]);
-                s.generate_data(data_size, sparsities[j]);
+                s.generate_data(data_size, block_sizes[i], sparsities[j]);
                 s.run();
                 std::cout
                     << block_sizes[i] << ","

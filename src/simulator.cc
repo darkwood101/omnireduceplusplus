@@ -5,6 +5,9 @@
 #include "worker.h"
 #include "utils.h"
 
+uint64_t computation_time = 0;
+uint64_t network_time = 0;
+
 Simulator::Simulator(workernum_t num_workers, uint32_t block_size, uint32_t bf_width) :
     aggregator_(num_workers, block_size, bf_width),
     block_size_(block_size),
@@ -19,14 +22,14 @@ Simulator::Simulator(workernum_t num_workers, uint32_t block_size, uint32_t bf_w
     events_.push(Event(INIT_EVENT, 0, 0, 0));
 }
 
-void Simulator::generate_data(size_t size, float sparsity) {
+void Simulator::generate_data(size_t size, uint32_t block_size, float sparsity) {
     // For now, to keep things a bit simpler, we require that data size
     // be a multiple of block size
     if (size % block_size_ != 0) {
         throw std::invalid_argument("Data size must be multiple of block size");
     }
     for (Worker& w : workers_) {
-        w.generate_data(size, sparsity);
+        w.generate_data(size, block_size, sparsity);
     }
 }
 
@@ -56,6 +59,7 @@ void Simulator::run() {
                 // Once the worker processed the packet, prepare for sending
                 delta = worker.process_response();
                 events_.push(Event(WORKER_PREPARE, worker.id_, time_, time_ + delta));
+                computation_time += delta;
                 break;
             case WORKER_PREPARE:
                 delta = worker.prepare_to_send();
@@ -63,12 +67,16 @@ void Simulator::run() {
                 // worker's next nonzero block, so don't send anything
                 if (delta != TIME_NOW) {
                     events_.push(Event(WORKER_SEND, worker.id_, time_, time_ + delta));
+                    if (worker.id_ == 0) {
+                        network_time += delta;
+                    }
                 }
                 break;
             case WORKER_SEND:
                 // Once the worker sends the packet, aggregator should process it
                 delta = worker.send(aggregator_);
                 events_.push(Event(AGGREGATOR_PROCESS, worker.id_, time_, time_ + delta));
+                computation_time += delta;
                 break;
             case AGGREGATOR_PROCESS:
                 delta = aggregator_.process_response(worker.id_);
@@ -76,6 +84,7 @@ void Simulator::run() {
                 // but only if all required workers sent their packets
                 if (aggregator_.all_received()) {
                     events_.push(Event(AGGREGATOR_PREPARE, worker.id_, time_, time_ + delta));
+                    computation_time += delta;
                 }
                 break;
             case AGGREGATOR_PREPARE:
@@ -84,6 +93,7 @@ void Simulator::run() {
                 for (Worker& w : workers_) {
                     events_.push(Event(AGGREGATOR_SEND, w.id_, time_, time_ + delta));
                 }
+                network_time += delta;
                 break;
             case AGGREGATOR_SEND:
                 // Once a worker receives the block, it processes it
@@ -93,6 +103,7 @@ void Simulator::run() {
                     aggregator_.reset();
                 }
                 events_.push(Event(WORKER_PROCESS, worker.id_, time_, time_ + delta));
+                computation_time += delta;
                 break;
         }
         events_.pop();

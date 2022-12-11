@@ -6,6 +6,9 @@
 #include "worker.h"
 #include "utils.h"
 
+extern uint64_t computation_time;
+extern uint64_t network_time;
+
 Aggregator::Aggregator(workernum_t num_workers, uint32_t block_size, uint32_t bf_width) :
     num_workers_(num_workers),
     num_received_(0),
@@ -74,6 +77,7 @@ timedelta_t Aggregator::process_response(workernum_t worker) {
 
     // Preparing to send will require iterating over all blocks in all
     // packets that the workers send
+    //computation_time += static_cast<uint64_t>(ceil(0.64971 * bf_width_ * num_to_receive_));
     return static_cast<uint64_t>(ceil(0.64971 * bf_width_ * num_to_receive_));
 }
 
@@ -137,7 +141,8 @@ timedelta_t Aggregator::prepare_to_send() {
     // preparing to send.
     debug_assert(valid_blocks > 0);
     // The aggregator sends only the valid blocks
-    return static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
+    //network_time += static_cast<uint64_t>(ceil(1000 + 0.08 * block_size_ * valid_blocks));
+    return static_cast<uint64_t>(ceil(1000 + 0.8 * block_size_ * valid_blocks));
 }
 
 timedelta_t Aggregator::send(Worker& worker) {
@@ -150,6 +155,7 @@ timedelta_t Aggregator::send(Worker& worker) {
     }
     // Processing the packet will take iterating over each fused block,
     // and then over data for valid blocks
+    //computation_time += static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
     return static_cast<uint64_t>(ceil(0.64971 * bf_width_ + 0.64971 * valid_blocks * block_size_));
 }
 
