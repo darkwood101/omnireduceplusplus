@@ -137,7 +137,7 @@ timedelta_t Aggregator::prepare_to_send() {
     // preparing to send.
     debug_assert(valid_blocks > 0);
     // The aggregator sends only the valid blocks
-    return ceil(90 + 0.8 * block_size_ * valid_blocks);
+    return ceil(1 + 0.00008 * block_size_ * valid_blocks);
 }
 
 timedelta_t Aggregator::send(Worker& worker) {
